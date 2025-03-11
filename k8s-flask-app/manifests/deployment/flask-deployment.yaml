@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+  labels:
+    app: flask-app
+  annotations:
+    kubernetes.io/min-replicas: "1"  
+    kubernetes.io/max-replicas: "5"  
+spec:
+  replicas: 1  
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      containers:
+        - name: flask-app
+          image: flask-postgres:latest
+          imagePullPolicy: Never  
+          command: ["python"]
+          args: ["app.py"]  
+          ports:
+            - containerPort: 5000
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+          envFrom:
+            - configMapRef:
+                name: postgres-config
+            - secretRef:
+                name: postgres-secret
+          env:
+            - name: FLASK_ENV
+              value: "development"
+            - name: FLASK_DEBUG
+              value: "1"
+         
